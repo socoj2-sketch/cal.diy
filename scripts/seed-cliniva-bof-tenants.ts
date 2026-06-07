@@ -1,12 +1,12 @@
 import process from "node:process";
 import { hashPassword } from "@calcom/lib/auth/hashPassword";
 import { DEFAULT_SCHEDULE, getAvailabilityFromSchedule } from "@calcom/lib/availability";
-import { schedulerTenants } from "@calcom/lib/scheduler/tenants";
+import { parseSchedulerTenantsJson } from "@calcom/lib/scheduler/tenants";
 import { prisma } from "@calcom/prisma";
 import type { Prisma } from "@calcom/prisma/client";
 import { MembershipRole, SchedulingType } from "@calcom/prisma/enums";
 
-type SchedulerTenantConfig = (typeof schedulerTenants)[number];
+type SchedulerTenantConfig = ReturnType<typeof parseSchedulerTenantsJson>[number];
 type SeededAdmin = {
   id: number;
   email: string;
@@ -321,7 +321,9 @@ async function upsertSchedulerTenant(tenant: SchedulerTenantConfig): Promise<voi
 }
 
 async function main(): Promise<void> {
-  for (const tenant of schedulerTenants) {
+  const tenants = parseSchedulerTenantsJson(process.env.SCHEDULER_TENANTS_JSON);
+
+  for (const tenant of tenants) {
     await upsertSchedulerTenant(tenant);
   }
 }

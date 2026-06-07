@@ -4,6 +4,7 @@ import {
   buildTenantEmbedSnippet,
   getDefaultSchedulerTenant,
   getSchedulerTenant,
+  parseSchedulerTenantsJson,
   resolveSchedulerTenantFromHostname,
   schedulerTenants,
 } from "./tenants";
@@ -25,6 +26,46 @@ describe("scheduler tenant configuration", () => {
     expect(resolveSchedulerTenantFromHostname("example.com")).toBeNull();
   });
 
+  it("loads many customer tenants from runtime JSON instead of source-code changes", () => {
+    const tenants = parseSchedulerTenantsJson(
+      JSON.stringify([
+        {
+          slug: "customer-acme",
+          displayName: "Acme Health",
+          organizationSlug: "customer-acme",
+          teamSlug: "customer-acme-scheduling",
+          adminEmail: "scheduler-admin@acme.example",
+          adminUsername: "customer-acme-scheduler-admin",
+          autoAcceptEmailDomain: "acme.example",
+          bookingHostnames: ["acme.example", "acme.scheduler.clinivaai.com", "*.acme.example"],
+          brandColor: "#0f766e",
+          darkBrandColor: "#2dd4bf",
+          defaultEventTypes: [
+            {
+              slug: "consultation",
+              title: "Consultation",
+              description: "Customer-scoped consultation.",
+              length: 30,
+            },
+          ],
+        },
+      ])
+    );
+
+    expect(getSchedulerTenant("customer-acme", tenants)?.displayName).toBe("Acme Health");
+    expect(resolveSchedulerTenantFromHostname("east.acme.example", tenants)?.slug).toBe("customer-acme");
+    expect(buildTenantBookingPath(getDefaultSchedulerTenant(tenants))).toBe(
+      "/team/customer-acme-scheduling/consultation"
+    );
+  });
+
+  it("rejects duplicate runtime tenant slugs and team slugs", () => {
+    const tenant = schedulerTenants[0];
+    expect(() => parseSchedulerTenantsJson(JSON.stringify([tenant, tenant]))).toThrow(
+      "Duplicate scheduler tenant slug: cliniva"
+    );
+  });
+
   it("builds team-scoped booking paths instead of user-global paths", () => {
     const cliniva = getSchedulerTenant("cliniva") ?? getDefaultSchedulerTenant();
     const bof = getSchedulerTenant("business-ops-forge") ?? getDefaultSchedulerTenant();
@@ -37,9 +78,9 @@ describe("scheduler tenant configuration", () => {
 
   it("builds embed snippets scoped to each tenant namespace", () => {
     const tenant = getSchedulerTenant("cliniva") ?? getDefaultSchedulerTenant();
-    const snippet = buildTenantEmbedSnippet({ tenant, schedulerOrigin: "https://scheduler.cliniva.ai/" });
+    const snippet = buildTenantEmbedSnippet({ tenant, schedulerOrigin: "https://scheduler.clinivaai.com/" });
 
-    expect(snippet).toContain('"https://scheduler.cliniva.ai/embed/embed.js"');
+    expect(snippet).toContain('"https://scheduler.clinivaai.com/embed/embed.js"');
     expect(snippet).toContain('Cal("init", "cliniva"');
     expect(snippet).toContain('calLink: "cliniva-scheduling/patient-consultation"');
     expect(snippet).toContain('id="cliniva-scheduler"');
