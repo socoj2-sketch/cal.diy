@@ -16,8 +16,8 @@ describe("scheduler tenant configuration", () => {
   });
 
   it("resolves tenant from first-party hostnames and subdomains", () => {
-    expect(resolveSchedulerTenantFromHostname("cliniva.ai")?.slug).toBe("cliniva");
-    expect(resolveSchedulerTenantFromHostname("scheduler.cliniva.ai")?.slug).toBe("cliniva");
+    expect(resolveSchedulerTenantFromHostname("clinivaai.com")?.slug).toBe("cliniva");
+    expect(resolveSchedulerTenantFromHostname("scheduler.clinivaai.com")?.slug).toBe("cliniva");
     expect(resolveSchedulerTenantFromHostname("app.businessopsforge.com")?.slug).toBe("business-ops-forge");
     expect(resolveSchedulerTenantFromHostname("scheduler.businessopsforge.com:443")?.slug).toBe(
       "business-ops-forge"

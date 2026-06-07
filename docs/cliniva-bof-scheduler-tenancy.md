@@ -48,7 +48,7 @@ if (!tenant) throw new Error("Cliniva scheduler tenant missing");
 
 const html = buildTenantEmbedSnippet({
   tenant,
-  schedulerOrigin: "https://scheduler.cliniva.ai",
+  schedulerOrigin: "https://scheduler.clinivaai.com",
 });
 ```
 
@@ -69,6 +69,6 @@ const html = buildTenantEmbedSnippet({
 ## Deployment notes
 
 - Run one Cal.diy service with PostgreSQL.
-- Map scheduler hostnames such as `scheduler.cliniva.ai` and `scheduler.businessopsforge.com` to the same runtime.
+- Map scheduler hostnames such as `scheduler.clinivaai.com` and `scheduler.businessopsforge.com` to the same runtime.
 - Keep Cliniva and Business Ops Forge as separate Cal.diy organizations/teams so memberships, event types, webhooks, brand colors, API keys, and future calendar credentials stay tenant-scoped.
 - Do not create a separate runtime per brand unless compliance/isolation later requires it.

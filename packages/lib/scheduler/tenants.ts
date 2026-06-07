@@ -25,10 +25,10 @@ export const schedulerTenants: readonly SchedulerTenant[] = [
     displayName: "Cliniva",
     organizationSlug: "cliniva",
     teamSlug: "cliniva-scheduling",
-    adminEmail: "scheduler-admin@cliniva.ai",
+    adminEmail: "scheduler-admin@clinivaai.com",
     adminUsername: "cliniva-scheduler-admin",
-    autoAcceptEmailDomain: "cliniva.ai",
-    bookingHostnames: ["cliniva.ai", "app.cliniva.ai", "cliniva.com"],
+    autoAcceptEmailDomain: "clinivaai.com",
+    bookingHostnames: ["clinivaai.com", "www.clinivaai.com", "scheduler.clinivaai.com"],
     brandColor: "#2563eb",
     darkBrandColor: "#60a5fa",
     defaultEventTypes: [
