@@ -129,36 +129,50 @@ async function upsertSchedulerTenant(tenant: SchedulerTenantConfig): Promise<voi
     schedulerTenant: tenant.slug,
   } satisfies Prisma.InputJsonObject;
 
-  const organization = await prisma.team.upsert({
+  const existingOrganization = await prisma.team.findFirst({
     where: {
-      slug_parentId: {
-        slug: tenant.organizationSlug,
-        parentId: null,
-      },
-    },
-    update: {
-      name: tenant.displayName,
-      isOrganization: true,
-      isPlatform: false,
-      brandColor: tenant.brandColor,
-      darkBrandColor: tenant.darkBrandColor,
-      metadata: organizationMetadata,
-    },
-    create: {
-      name: tenant.displayName,
       slug: tenant.organizationSlug,
       isOrganization: true,
-      isPlatform: false,
-      brandColor: tenant.brandColor,
-      darkBrandColor: tenant.darkBrandColor,
-      metadata: organizationMetadata,
     },
-    select: {
-      id: true,
-      slug: true,
-      name: true,
-    },
+    select: { id: true },
   });
+
+  let organization: { id: number; slug: string | null; name: string };
+  if (existingOrganization) {
+    organization = await prisma.team.update({
+      where: { id: existingOrganization.id },
+      data: {
+        name: tenant.displayName,
+        isOrganization: true,
+        isPlatform: false,
+        brandColor: tenant.brandColor,
+        darkBrandColor: tenant.darkBrandColor,
+        metadata: organizationMetadata,
+      },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+      },
+    });
+  } else {
+    organization = await prisma.team.create({
+      data: {
+        name: tenant.displayName,
+        slug: tenant.organizationSlug,
+        isOrganization: true,
+        isPlatform: false,
+        brandColor: tenant.brandColor,
+        darkBrandColor: tenant.darkBrandColor,
+        metadata: organizationMetadata,
+      },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+      },
+    });
+  }
 
   await prisma.organizationSettings.upsert({
     where: { organizationId: organization.id },
