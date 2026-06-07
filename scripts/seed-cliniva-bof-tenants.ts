@@ -378,8 +378,7 @@ async function upsertSchedulerTenant(tenant: SchedulerTenantConfig): Promise<voi
         team: team.slug,
         admin: admin.email,
         eventTypes: tenant.defaultEventTypes.map(
-          (eventType: SchedulerTenantConfig["defaultEventTypes"][number]) =>
-            `/team/${team.slug}/${eventType.slug}`
+          (eventType: SchedulerTenantConfig["defaultEventTypes"][number]) => `/${team.slug}/${eventType.slug}`
         ),
       },
       null,

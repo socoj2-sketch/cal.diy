@@ -1,6 +1,6 @@
 # Shared scheduler tenancy for Cliniva, Business Ops Forge, and customer schedulers
 
-This fork is intended to run **one Cal.diy runtime** backed by one PostgreSQL database. Brands and customers are separated inside Cal.diy by organization/team/event-type boundaries, not by deploying a new runtime for every customer.
+This fork is intended to run **one Cal.diy runtime** backed by one PostgreSQL database. Brands and customers are separated inside Cal.diy by organization/event-type boundaries, not by deploying a new runtime for every customer.
 
 ## Current built-in tenants
 
@@ -9,13 +9,13 @@ If no runtime tenant JSON is supplied, the seed keeps the current first-party te
 - Cliniva organization: `cliniva`
   - Scheduling team: `cliniva-scheduling`
   - Default booking links:
-    - `/team/cliniva-scheduling/patient-consultation`
-    - `/team/cliniva-scheduling/clinic-onboarding`
+    - `/cliniva-scheduling/patient-consultation`
+    - `/cliniva-scheduling/clinic-onboarding`
 - Business Ops Forge organization: `business-ops-forge`
   - Scheduling team: `business-ops-forge-scheduling`
   - Default booking links:
-    - `/team/business-ops-forge-scheduling/ops-consultation`
-    - `/team/business-ops-forge-scheduling/implementation-planning`
+    - `/business-ops-forge-scheduling/ops-consultation`
+    - `/business-ops-forge-scheduling/implementation-planning`
 
 Tenant helper code lives in `packages/lib/scheduler/tenants.ts`. It is intentionally non-secret: slugs, brand colors, hostnames, default event-type contracts, and embed-snippet generation. Runtime secrets remain environment/provider-managed.
 

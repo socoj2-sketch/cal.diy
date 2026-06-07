@@ -189,7 +189,7 @@ export function buildTenantBookingPath(
   tenant: SchedulerTenant,
   eventTypeSlug: string = tenant.defaultEventTypes[0].slug
 ): string {
-  return `/team/${tenant.teamSlug}/${eventTypeSlug}`;
+  return `/${tenant.teamSlug}/${eventTypeSlug}`;
 }
 
 export function buildTenantEmbedSnippet({

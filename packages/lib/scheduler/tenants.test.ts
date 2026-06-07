@@ -55,7 +55,7 @@ describe("scheduler tenant configuration", () => {
     expect(getSchedulerTenant("customer-acme", tenants)?.displayName).toBe("Acme Health");
     expect(resolveSchedulerTenantFromHostname("east.acme.example", tenants)?.slug).toBe("customer-acme");
     expect(buildTenantBookingPath(getDefaultSchedulerTenant(tenants))).toBe(
-      "/team/customer-acme-scheduling/consultation"
+      "/customer-acme-scheduling/consultation"
     );
   });
 
@@ -70,9 +70,9 @@ describe("scheduler tenant configuration", () => {
     const cliniva = getSchedulerTenant("cliniva") ?? getDefaultSchedulerTenant();
     const bof = getSchedulerTenant("business-ops-forge") ?? getDefaultSchedulerTenant();
 
-    expect(buildTenantBookingPath(cliniva)).toBe("/team/cliniva-scheduling/patient-consultation");
+    expect(buildTenantBookingPath(cliniva)).toBe("/cliniva-scheduling/patient-consultation");
     expect(buildTenantBookingPath(bof, "implementation-planning")).toBe(
-      "/team/business-ops-forge-scheduling/implementation-planning"
+      "/business-ops-forge-scheduling/implementation-planning"
     );
   });
 
