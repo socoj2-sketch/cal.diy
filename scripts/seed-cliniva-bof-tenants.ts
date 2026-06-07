@@ -4,7 +4,7 @@ import { DEFAULT_SCHEDULE, getAvailabilityFromSchedule } from "@calcom/lib/avail
 import { parseSchedulerTenantsJson } from "@calcom/lib/scheduler/tenants";
 import { prisma } from "@calcom/prisma";
 import type { Prisma } from "@calcom/prisma/client";
-import { MembershipRole, SchedulingType } from "@calcom/prisma/enums";
+import { MembershipRole } from "@calcom/prisma/enums";
 
 type SchedulerTenantConfig = ReturnType<typeof parseSchedulerTenantsJson>[number];
 type SeededAdmin = {
@@ -218,6 +218,54 @@ async function upsertSchedulerTenant(tenant: SchedulerTenantConfig): Promise<voi
     },
   });
 
+  const publicBooker = await prisma.user.upsert({
+    where: { email: `scheduler-booking-${tenant.slug}@${tenant.autoAcceptEmailDomain}` },
+    update: {
+      username: tenant.teamSlug,
+      name: `${tenant.displayName} Scheduling`,
+      timeZone: "America/New_York",
+      brandColor: tenant.brandColor,
+      darkBrandColor: tenant.darkBrandColor,
+      completedOnboarding: true,
+      verified: true,
+    },
+    create: {
+      email: `scheduler-booking-${tenant.slug}@${tenant.autoAcceptEmailDomain}`,
+      username: tenant.teamSlug,
+      name: `${tenant.displayName} Scheduling`,
+      timeZone: "America/New_York",
+      brandColor: tenant.brandColor,
+      darkBrandColor: tenant.darkBrandColor,
+      completedOnboarding: true,
+      verified: true,
+    },
+    include: { schedules: true },
+  });
+
+  if (!publicBooker.schedules.length) {
+    await prisma.schedule.create({
+      data: {
+        name: "Default schedule",
+        userId: publicBooker.id,
+        timeZone: "America/New_York",
+        availability: {
+          createMany: {
+            data: [1, 2, 3, 4, 5].map((day) => ({
+              days: [day],
+              startTime: new Date("1970-01-01T13:00:00.000Z"),
+              endTime: new Date("1970-01-01T22:00:00.000Z"),
+            })),
+          },
+        },
+      },
+    });
+  }
+
+  const publicBookerWithSchedule = await prisma.user.findUniqueOrThrow({
+    where: { id: publicBooker.id },
+    include: { schedules: true },
+  });
+
   await upsertMembership({ teamId: organization.id, userId: admin.id });
 
   const teamMetadata = {
@@ -253,8 +301,7 @@ async function upsertSchedulerTenant(tenant: SchedulerTenantConfig): Promise<voi
     },
   });
 
-  const membership = await upsertMembership({ teamId: team.id, userId: admin.id });
-  const scheduleId = admin.schedules[0]?.id;
+  await upsertMembership({ teamId: team.id, userId: admin.id });
 
   for (const eventType of tenant.defaultEventTypes) {
     const schedulerMetadata = {
@@ -264,8 +311,8 @@ async function upsertSchedulerTenant(tenant: SchedulerTenantConfig): Promise<voi
 
     const seededEventType = await prisma.eventType.upsert({
       where: {
-        teamId_slug: {
-          teamId: team.id,
+        userId_slug: {
+          userId: publicBookerWithSchedule.id,
           slug: eventType.slug,
         },
       },
@@ -273,20 +320,29 @@ async function upsertSchedulerTenant(tenant: SchedulerTenantConfig): Promise<voi
         title: eventType.title,
         description: eventType.description,
         length: eventType.length,
-        schedulingType: SchedulingType.COLLECTIVE,
-        teamId: team.id,
+        schedulingType: null,
+        teamId: null,
+        userId: publicBookerWithSchedule.id,
+        scheduleId: publicBookerWithSchedule.schedules[0]?.id,
         metadata: schedulerMetadata,
         hidden: false,
+        users: {
+          set: [{ id: publicBookerWithSchedule.id }],
+        },
       },
       create: {
         title: eventType.title,
         slug: eventType.slug,
         description: eventType.description,
         length: eventType.length,
-        schedulingType: SchedulingType.COLLECTIVE,
-        teamId: team.id,
+        schedulingType: null,
+        userId: publicBookerWithSchedule.id,
+        scheduleId: publicBookerWithSchedule.schedules[0]?.id,
         metadata: schedulerMetadata,
         hidden: false,
+        users: {
+          connect: [{ id: publicBookerWithSchedule.id }],
+        },
       },
       select: {
         id: true,
@@ -297,21 +353,19 @@ async function upsertSchedulerTenant(tenant: SchedulerTenantConfig): Promise<voi
     await prisma.host.upsert({
       where: {
         userId_eventTypeId: {
-          userId: admin.id,
+          userId: publicBookerWithSchedule.id,
           eventTypeId: seededEventType.id,
         },
       },
       update: {
         isFixed: true,
-        scheduleId,
-        memberId: membership.id,
+        scheduleId: publicBookerWithSchedule.schedules[0]?.id,
       },
       create: {
-        userId: admin.id,
+        userId: publicBookerWithSchedule.id,
         eventTypeId: seededEventType.id,
         isFixed: true,
-        scheduleId,
-        memberId: membership.id,
+        scheduleId: publicBookerWithSchedule.schedules[0]?.id,
       },
     });
   }
