@@ -15,6 +15,7 @@ type SchedulerTenant = {
     description: string;
     length: number;
   }[];
+  retiredEventTypeSlugs?: string[];
 };
 
 const defaultSchedulerTenants: readonly SchedulerTenant[] = [
@@ -31,18 +32,13 @@ const defaultSchedulerTenants: readonly SchedulerTenant[] = [
     darkBrandColor: "#60a5fa",
     defaultEventTypes: [
       {
-        slug: "patient-consultation",
-        title: "Patient consultation",
-        description: "Cliniva patient appointment request routed to the clinic scheduling team.",
+        slug: "workflow-review",
+        title: "Schedule your workflow review today.",
+        description: "30-minute ClinivaAI workflow review routed to the clinic scheduling team.",
         length: 30,
       },
-      {
-        slug: "clinic-onboarding",
-        title: "Clinic onboarding",
-        description: "Operational onboarding session for a Cliniva clinic workspace.",
-        length: 45,
-      },
     ],
+    retiredEventTypeSlugs: ["patient-consultation", "clinic-onboarding"],
   },
   {
     slug: "business-ops-forge",
@@ -97,6 +93,9 @@ function isSchedulerTenant(value: unknown): value is SchedulerTenant {
     typeof tenant.darkBrandColor === "string" &&
     Array.isArray(tenant.defaultEventTypes) &&
     tenant.defaultEventTypes.length > 0 &&
+    (!("retiredEventTypeSlugs" in tenant) ||
+      (Array.isArray(tenant.retiredEventTypeSlugs) &&
+        tenant.retiredEventTypeSlugs.every((slug) => typeof slug === "string"))) &&
     tenant.defaultEventTypes.every((eventType) => {
       if (!eventType || typeof eventType !== "object") return false;
       const typedEventType = eventType as Record<string, unknown>;

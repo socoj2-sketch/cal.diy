@@ -70,7 +70,14 @@ describe("scheduler tenant configuration", () => {
     const cliniva = getSchedulerTenant("cliniva") ?? getDefaultSchedulerTenant();
     const bof = getSchedulerTenant("business-ops-forge") ?? getDefaultSchedulerTenant();
 
-    expect(buildTenantBookingPath(cliniva)).toBe("/cliniva-scheduling/patient-consultation");
+    expect(cliniva.defaultEventTypes).toHaveLength(1);
+    expect(cliniva.defaultEventTypes[0]).toMatchObject({
+      slug: "workflow-review",
+      title: "Schedule your workflow review today.",
+      length: 30,
+    });
+    expect(cliniva.retiredEventTypeSlugs).toEqual(["patient-consultation", "clinic-onboarding"]);
+    expect(buildTenantBookingPath(cliniva)).toBe("/cliniva-scheduling/workflow-review");
     expect(buildTenantBookingPath(bof, "implementation-planning")).toBe(
       "/business-ops-forge-scheduling/implementation-planning"
     );
@@ -82,7 +89,7 @@ describe("scheduler tenant configuration", () => {
 
     expect(snippet).toContain('"https://scheduler.clinivaai.com/embed/embed.js"');
     expect(snippet).toContain('Cal("init", "cliniva"');
-    expect(snippet).toContain('calLink: "cliniva-scheduling/patient-consultation"');
+    expect(snippet).toContain('calLink: "cliniva-scheduling/workflow-review"');
     expect(snippet).toContain('id="cliniva-scheduler"');
   });
 });

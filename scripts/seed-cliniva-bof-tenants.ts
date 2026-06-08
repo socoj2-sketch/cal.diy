@@ -303,6 +303,16 @@ async function upsertSchedulerTenant(tenant: SchedulerTenantConfig): Promise<voi
 
   await upsertMembership({ teamId: team.id, userId: admin.id });
 
+  if (tenant.retiredEventTypeSlugs?.length) {
+    await prisma.eventType.updateMany({
+      where: {
+        userId: publicBookerWithSchedule.id,
+        slug: { in: tenant.retiredEventTypeSlugs },
+      },
+      data: { hidden: true },
+    });
+  }
+
   for (const eventType of tenant.defaultEventTypes) {
     const schedulerMetadata = {
       schedulerTenant: tenant.slug,
