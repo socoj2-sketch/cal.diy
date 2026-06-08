@@ -58,18 +58,13 @@ const defaultSchedulerTenants: readonly SchedulerTenant[] = [
     darkBrandColor: "#fb923c",
     defaultEventTypes: [
       {
-        slug: "ops-consultation",
-        title: "Operations consultation",
-        description: "Business Ops Forge consultation routed to the operations scheduling team.",
+        slug: "workflow-audit",
+        title: "Schedule your workflow audit today.",
+        description: "30-minute Business Ops Forge workflow audit routed to the operations scheduling team.",
         length: 30,
       },
-      {
-        slug: "implementation-planning",
-        title: "Implementation planning",
-        description: "Planning session for portal, automation, or customer operations rollout.",
-        length: 45,
-      },
     ],
+    retiredEventTypeSlugs: ["ops-consultation", "implementation-planning"],
   },
 ];
 

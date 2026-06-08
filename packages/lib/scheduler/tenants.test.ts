@@ -78,9 +78,14 @@ describe("scheduler tenant configuration", () => {
     });
     expect(cliniva.retiredEventTypeSlugs).toEqual(["patient-consultation", "clinic-onboarding"]);
     expect(buildTenantBookingPath(cliniva)).toBe("/cliniva-scheduling/workflow-review");
-    expect(buildTenantBookingPath(bof, "implementation-planning")).toBe(
-      "/business-ops-forge-scheduling/implementation-planning"
-    );
+    expect(bof.defaultEventTypes).toHaveLength(1);
+    expect(bof.defaultEventTypes[0]).toMatchObject({
+      slug: "workflow-audit",
+      title: "Schedule your workflow audit today.",
+      length: 30,
+    });
+    expect(bof.retiredEventTypeSlugs).toEqual(["ops-consultation", "implementation-planning"]);
+    expect(buildTenantBookingPath(bof)).toBe("/business-ops-forge-scheduling/workflow-audit");
   });
 
   it("builds embed snippets scoped to each tenant namespace", () => {
